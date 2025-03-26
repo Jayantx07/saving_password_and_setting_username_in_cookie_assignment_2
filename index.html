@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Finding the SHA256 hash</title>
+    <title>SHA256 Hash Checker</title>
     <style>
       body {
         display: flex;
@@ -47,7 +47,6 @@
 
       #user-input input {
         padding: 8px;
-        border-radius: none;
         border: 3px solid #0a2463;
         margin-right: 8px;
       }
@@ -58,11 +57,11 @@
 
       #user-input button {
         padding: 8px;
-        border-radius: none;
         border: 3px solid #0a2463;
         background-color: #2C76A7;
         color: #fffaff;
         font-weight: bold;
+        cursor: pointer;
       }
 
       /* result div */
@@ -70,24 +69,36 @@
         margin-top: 16px;
         background-color: #3e92cc;
         padding: 8px;
-        border-radius: none;
+        border-radius: 4px;
         color: #fffaff;
       }
 
       .hidden {
         display: none;
       }
+
+      .success {
+        background-color: #2ecc71;
+      }
+
+      .error {
+        background-color: #e74c3c;
+      }
     </style>
   </head>
   <body>
     <div id="wrapper">
-      <span id="sha256-hash"></span>
+      <span id="sha256-hash">Loading...</span>
       <div id="user-input">
-        <input type="text" id="pin" />
+        <input type="text" id="pin" placeholder="Enter a 3-digit number" />
         <button id="check">Check</button>
       </div>
       <div id="result" class="hidden"></div>
     </div>
+
+    <!-- Audio Element -->
+    <audio id="successSound" src="success.mp3"></audio>
+
     <script src="script.js" async></script>
   </body>
 </html>

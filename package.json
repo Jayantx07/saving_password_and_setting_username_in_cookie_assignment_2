@@ -3,6 +3,14 @@
     "start": "servor --reload"
   },
   "dependencies": {
+    "express": "^4.21.2",
     "servor": "^4.0.2"
-  }
+  },
+  "name": "saving_password_and_setting_username_in_cookie_assignment_2",
+  "version": "1.0.0",
+  "description": "- Grasp the concept of SHA256 cryptographic hashing.\r - Enhance analytical skills in decoding hash values.",
+  "main": "script.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

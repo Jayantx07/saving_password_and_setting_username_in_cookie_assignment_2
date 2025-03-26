@@ -1,94 +1,107 @@
 const MIN = 100;
 const MAX = 999;
-const pinInput = document.getElementById('pin');
-const sha256HashView = document.getElementById('sha256-hash');
-const resultView = document.getElementById('result');
+const pinInput = document.getElementById("pin");
+const sha256HashView = document.getElementById("sha256-hash");
+const resultView = document.getElementById("result");
+const checkButton = document.getElementById("check");
+const successSound = document.getElementById("successSound");
 
-// a function to store in the local storage
+// Function to store data in local storage
 function store(key, value) {
   localStorage.setItem(key, value);
 }
 
-// a function to retrieve from the local storage
+// Function to retrieve data from local storage
 function retrieve(key) {
   return localStorage.getItem(key);
 }
 
-function getRandomArbitrary(min, max) {
-  let cached;
-  cached = Math.random() * (max - min) + min;
-  cached = Math.floor(cached);
-  return cached;
+// Function to generate a random 3-digit number
+function getRandom3DigitNumber() {
+  return Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
 }
 
-// a function to clear the local storage
-function clear() {
-  localStorage.clear();
-}
-
-// a function to generate sha256 hash of the given string
+// Function to generate SHA256 hash of the given string
 async function sha256(message) {
-  // encode as UTF-8
   const msgBuffer = new TextEncoder().encode(message);
-
-  // hash the message
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-
-  // convert ArrayBuffer to Array
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-  // convert bytes to hex string
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  return hashHex;
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Retrieve or generate the SHA256 hash of a fixed 3-digit number
 async function getSHA256Hash() {
-  let cached = retrieve('sha256');
-  if (cached) {
-    return cached;
+  let storedNumber = retrieve("originalNumber");
+  let hash;
+
+  if (!storedNumber) {
+    storedNumber = getRandom3DigitNumber();
+    store("originalNumber", storedNumber);
+    hash = await sha256(storedNumber.toString());
+    store("sha256", hash);
+  } else {
+    hash = retrieve("sha256");
   }
 
-  cached = await sha256(getRandomArbitrary(MIN, MAX));
-  store('sha256', cached);
-  return cached;
+  return hash;
 }
 
+// Main function to display the SHA256 hash
 async function main() {
-  sha256HashView.innerHTML = 'Calculating...';
-  const hash = await getSHA256Hash();
-  sha256HashView.innerHTML = hash;
+  sha256HashView.textContent = "Calculating...";
+  try {
+    const hash = await getSHA256Hash();
+    sha256HashView.textContent = hash;
+  } catch (error) {
+    sha256HashView.textContent = "Error generating hash!";
+    console.error("Hash Generation Error:", error);
+  }
 }
 
+// Function to check user input
 async function test() {
   const pin = pinInput.value;
 
   if (pin.length !== 3) {
-    resultView.innerHTML = '💡 not 3 digits';
-    resultView.classList.remove('hidden');
+    resultView.textContent = "💡 Enter a 3-digit number";
+    resultView.classList.remove("hidden", "success", "error");
     return;
   }
 
-  const sha256HashView = document.getElementById('sha256-hash');
-  const hasedPin = await sha256(pin);
+  const storedNumber = retrieve("originalNumber");
 
-  if (hasedPin === sha256HashView.innerHTML) {
-    resultView.innerHTML = '🎉 success';
-    resultView.classList.add('success');
+  if (pin === storedNumber) {
+    resultView.textContent = "🎉 Correct!";
+    resultView.classList.add("success");
+    resultView.classList.remove("error");
+
+    // Play success sound only if user has interacted with page
+    if (successSound) {
+      successSound.play().catch(err => console.warn("Audio play blocked:", err));
+    }
   } else {
-    resultView.innerHTML = '❌ failed';
+    resultView.textContent = "❌ Incorrect, try again!";
+    resultView.classList.add("error");
+    resultView.classList.remove("success");
   }
-  resultView.classList.remove('hidden');
+
+  resultView.classList.remove("hidden");
 }
 
-// ensure pinInput only accepts numbers and is 3 digits long
-pinInput.addEventListener('input', (e) => {
-  const { value } = e.target;
-  pinInput.value = value.replace(/\D/g, '').slice(0, 3);
+// Ensure pinInput only accepts numbers and is 3 digits long
+pinInput.addEventListener("input", (e) => {
+  pinInput.value = e.target.value.replace(/\D/g, "").slice(0, 3);
 });
 
-// attach the test function to the button
-document.getElementById('check').addEventListener('click', test);
+// Attach the test function to the button
+checkButton.addEventListener("click", test);
 
+// Ensure audio plays only after user interaction
+document.body.addEventListener("click", () => {
+  if (successSound) {
+    successSound.play().catch(err => console.warn("Audio play blocked:", err));
+  }
+}, { once: true });
+
+// Run the main function on page load
 main();
